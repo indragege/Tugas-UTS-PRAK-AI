@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kenaikan PPN 12% - Analisis Sentimen</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background-color: #f0f2f5;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+        }
+
+        .card {
+            border-radius: 10px;
+        }
+
+        .result {
+            margin-top: 20px;
+        }
+
+        .visual img,
+        .wordcloud img {
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">Analisis Sentimen Kenaikan PPN 12%</a>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <!-- Ringkasan Metrik -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-white bg-info mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Komentar</h5>
+                        <p class="card-text display-6">{{ total_comments }}</p>
+                    </div>
+                </div>
+            </div>
+            {% for key, value in sentiment_counts.items() %}
+            <div class="col-md-3">
+                <div
+                    class="card text-white bg-{{ 'success' if key=='positif' else 'danger' if key=='negatif' else 'secondary' }} mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title text-capitalize">{{ key }}</h5>
+                        <p class="card-text display-6">{{ value }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Masukkan Komentar</h5>
+                <form action="/predict" method="POST">
+                    <div class="mb-3">
+                        <textarea class="form-control" name="komentar" id="komentar" rows="3"
+                            placeholder="Tulis komentar..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Klasifikasikan</button>
+                </form>
+            </div>
+        </div>
+
+        {% if label %}
+        <div class="alert alert-info result">
+            <h4 class="alert-heading">Hasil Klasifikasi</h4>
+            <p><strong>Komentar:</strong> {{ komentar }}</p>
+            <hr>
+            <p><strong>Prediksi Sentimen:</strong> {{ label }}</p>
+        </div>
+        {% endif %}
+
+        <hr class="my-5">
+
+        <h2>Visualisasi Analisis Kenaikan PPN 12%</h2>
+        <div class="row">
+            <div class="col-md-6 mb-4 text-center">
+                <h5>Distribusi Sentimen Kenaikan PPN 12%</h5>
+                <img src="{{ url_for('static', filename='sentimen_distribusi.png') }}" class="img-fluid shadow-sm"
+                    alt="Distribusi Sentimen">
+            </div>
+            <div class="col-md-6 mb-4 text-center">
+                <h5>Aktivitas Komentar per Hari - Kenaikan PPN 12%</h5>
+                <img src="{{ url_for('static', filename='komentar_per_hari.png') }}" class="img-fluid shadow-sm"
+                    alt="Aktivitas Harian">
+            </div>
+        </div>
+        <div class="row mb-5">
+            <div class="col-md-6 mb-4 text-center">
+                <h5>Distribusi Komentar per Platform - Kenaikan PPN 12%</h5>
+                <img src="{{ url_for('static', filename='komentar_per_platform.png') }}" class="img-fluid shadow-sm"
+                    alt="Distribusi Platform">
+            </div>
+        </div>
+
+        <!-- Interaktif Charts -->
+        <hr class="my-5">
+        <h2>Analisis Interaktif Kenaikan PPN 12%</h2>
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <canvas id="chartSentiment"></canvas>
+            </div>
+            <div class="col-md-6 mb-4">
+                <canvas id="chartPerDay"></canvas>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <canvas id="chartPerHour"></canvas>
+            </div>
+            <div class="col-md-6 mb-4">
+                <canvas id="chartPerPlatform"></canvas>
+            </div>
+        </div>
+
+        <hr class="my-5">
+
+        <h2>Wordcloud Kenaikan PPN 12%</h2>
+        <div class="row">
+            <div class="col-md-4 text-center mb-4">
+                <h6>Positif</h6>
+                <img src="{{ url_for('static', filename='wordcloud_positif.png') }}" class="img-fluid shadow-sm"
+                    alt="Wordcloud Positif">
+            </div>
+            <div class="col-md-4 text-center mb-4">
+                <h6>Negatif</h6>
+                <img src="{{ url_for('static', filename='wordcloud_negatif.png') }}" class="img-fluid shadow-sm"
+                    alt="Wordcloud Negatif">
+            </div>
+            <div class="col-md-4 text-center mb-4">
+                <h6>Netral</h6>
+                <img src="{{ url_for('static', filename='wordcloud_netral.png') }}" class="img-fluid shadow-sm"
+                    alt="Wordcloud Netral">
+            </div>
+        </div>
+
+        <!-- Carousel Infografis 1:1 -->
+        <hr class="my-5">
+        <h2>Infografis Kenaikan PPN 12% (Slide)</h2>
+        <div id="infografisCarousel" class="carousel slide mb-5" data-bs-interval="false">
+            <!-- Indicators -->
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#infografisCarousel" data-bs-slide-to="0" class="active"
+                    aria-current="true" aria-label="Slide 1"></button>
+                <button type="button" data-bs-target="#infografisCarousel" data-bs-slide-to="1"
+                    aria-label="Slide 2"></button>
+                <button type="button" data-bs-target="#infografisCarousel" data-bs-slide-to="2"
+                    aria-label="Slide 3"></button>
+                <button type="button" data-bs-target="#infografisCarousel" data-bs-slide-to="3"
+                    aria-label="Slide 4"></button>
+                <button type="button" data-bs-target="#infografisCarousel" data-bs-slide-to="4"
+                    aria-label="Slide 5"></button>
+            </div>
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <img src="{{ url_for('static', filename='infografis_sentimen.png') }}" class="d-block w-100"
+                        alt="Infografis Sentimen">
+                </div>
+                <div class="carousel-item">
+                    <img src="{{ url_for('static', filename='infografis_platform.png') }}" class="d-block w-100"
+                        alt="Infografis Platform">
+                </div>
+                <div class="carousel-item">
+                    <img src="{{ url_for('static', filename='infografis_wordcloud_positif.png') }}"
+                        class="d-block w-100" alt="WC Positif">
+                </div>
+                <div class="carousel-item">
+                    <img src="{{ url_for('static', filename='infografis_wordcloud_negatif.png') }}"
+                        class="d-block w-100" alt="WC Negatif">
+                </div>
+                <div class="carousel-item">
+                    <img src="{{ url_for('static', filename='infografis_wordcloud_netral.png') }}" class="d-block w-100"
+                        alt="WC Netral">
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#infografisCarousel"
+                data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#infografisCarousel"
+                data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const sentimentData = JSON.parse(`{{ sentiment_counts | tojson }}`);
+        const perDayData = JSON.parse(`{{ comments_per_day | tojson }}`);
+        const perHourData = JSON.parse(`{{ comments_per_hour | tojson }}`);
+        const perPlatformData = JSON.parse(`{{ comments_per_platform | tojson }}`);
+
+        // Helper to build a chart
+        function buildChart(ctxId, labels, data, type, title) {
+            const ctx = document.getElementById(ctxId).getContext('2d');
+            new Chart(ctx, {
+                type: type,
+                data: { labels: labels, datasets: [{ label: title, data: data, backgroundColor: 'rgba(54, 162, 235, 0.6)' }] },
+                options: { responsive: true, plugins: { legend: { display: false }, title: { display: true, text: title } } }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            buildChart('chartSentiment', Object.keys(sentimentData), Object.values(sentimentData), 'pie', 'Sentimen Kenaikan PPN 12%');
+            buildChart('chartPerDay', Object.keys(perDayData), Object.values(perDayData), 'bar', 'Komentar per Hari - Kenaikan PPN 12%');
+            buildChart('chartPerHour', Object.keys(perHourData), Object.values(perHourData), 'bar', 'Komentar per Jam - Kenaikan PPN 12%');
+            buildChart('chartPerPlatform', Object.keys(perPlatformData), Object.values(perPlatformData), 'doughnut', 'Komentar per Platform - Kenaikan PPN 12%');
+        });
+    </script>
+    <!-- Inisialisasi Carousel Tanpa Auto-Slide -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var carouselEl = document.querySelector('#infografisCarousel');
+            // Buat ulang instance carousel dengan interval false
+            if (carouselEl) {
+                new bootstrap.Carousel(carouselEl, {
+                    interval: false,
+                    ride: false
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

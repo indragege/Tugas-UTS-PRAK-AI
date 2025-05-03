@@ -1,0 +1,12 @@
+flask
+pandas
+numpy
+nltk
+Sastrawi
+scikit-learn
+tensorflow
+pillow
+matplotlib
+seaborn
+wordcloud
+gunicorn 
